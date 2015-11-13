@@ -523,6 +523,6 @@ add_to_profile 'export PATH="'${PREFIX}'/bin:${PATH}"'
 add_to_profile 'eval "$(rbenv init -)"'
 add_to_profile '# Set up docker-vagrant'
 add_to_profile "export DOCKER_HOST='tcp://docker.dev:2375'"
-add_to_profile 'export NVM_DIR="$HOME/.nvm'
+add_to_profile 'export NVM_DIR="$HOME/.nvm"'
 add_to_profile '[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"  # This loads nvm'
 add_to_profile 'eval "$(direnv hook zsh)"'
