@@ -1,4 +1,4 @@
-# GG MDE
+# GG Minimal Development Environment
 
 To install, run this in a terminal:
 
