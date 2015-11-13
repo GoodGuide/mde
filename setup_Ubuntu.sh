@@ -48,6 +48,14 @@ trap show_exit_messages EXIT
 		read
 	}
 
+	can_exec(){
+		silence command -v $1
+	}
+
+	silence() {
+		$@ >/dev/null 2>&1
+	}
+
 	ask() {
 		[[ ${ASSUME_YES:-false} == 'true' ]] && return 0
 		printf "\x1b[32m%b (y/N)\x1b[0m " "$1"
