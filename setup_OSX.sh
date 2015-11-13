@@ -1,9 +1,9 @@
 #!/bin/bash
-# vim: set noexpandtab tabstop=4 shiftwidth=0:
+# vim: set noexpandtab tabstop=4 softtabstop=4 shiftwidth=4 textwidth=0:
+
+{ # this ensures the whole script is downloaded before evaulation
 
 set -e -u
-
-{
 
 trap 'onoes Interrupt.' INT
 trap show_exit_messages EXIT
@@ -529,4 +529,4 @@ add_to_profile 'export NVM_DIR="$HOME/.nvm"'
 add_to_profile '[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"  # This loads nvm'
 add_to_profile 'eval "$(direnv hook zsh)"'
 
-}
+} # this ensures the whole script is downloaded before evaulation

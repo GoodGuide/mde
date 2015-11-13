@@ -1,11 +1,11 @@
 #!/bin/bash
-# vim: set noexpandtab tabstop=4 shiftwidth=0:
+# vim: set noexpandtab tabstop=4 softtabstop=4 shiftwidth=4 textwidth=0:
 
 # This script is meant to be run on an unprovisioned environment via the familiar `curl | bash` (hack) style invocation. This is useful for systems before any of even the most basic tools are available, such as git.
 
-set -e -u
+{ # this ensures the whole script is downloaded before evaulation
 
-{
+set -e -u
 
 red(){
 	echo -e "\n\x1b[31m$1\x1b[0m" >&2
@@ -55,4 +55,4 @@ case "$(uname -s)" in
 	;;
 esac
 
-}
+} # this ensures the whole script is downloaded before evaulation
