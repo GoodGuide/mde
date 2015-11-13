@@ -5,6 +5,8 @@
 
 set -e -u
 
+{
+
 red(){
 	echo -e "\n\x1b[31m$1\x1b[0m" >&2
 }
@@ -52,3 +54,5 @@ case "$(uname -s)" in
 		onoes "There is no automated setup script for your OS!"
 	;;
 esac
+
+}
