@@ -289,13 +289,24 @@ else
 	printf '127.0.0.1\tdocker.dev\n' | sudo tee -a /etc/hosts
 fi
 
+echo_section 'Go'
+export GOPATH="$HOME/gopath"
+export PATH="$GOPATH/bin:$PATH"
+mkdir -p "$GOPATH"
+
+cat <<-EOF | add_to_profile
+export GOPATH="$HOME/gopath"
+export PATH="$GOPATH/bin:$PATH"
+EOF
+
 echo_section 'goodguide-git-hooks'
 if ! can_exec 'goodguide-git-hooks'; then
-	silence pushd $(mktmpdir)
-	curl -fsSL https://github.com/GoodGuide/goodguide-git-hooks/releases/download/v0.0.7/goodguide-git-hooks_0.0.7_linux_amd64.tar.gz | \
-		tar -xvzf -
-	sudo install -o root -g root ./goodguide-git-hooks "$PREFIX/bin/goodguide-git-hooks"
-	silence popd
+	go get -u -v github.com/goodguide/goodguide-git-hooks
+fi
+
+echo_section 'forego'
+if ! can_exec 'forego'; then
+	go get -u github.com/ddollar/forego
 fi
 
 if [[ ! -d $HOME/.dotfiles ]]; then
