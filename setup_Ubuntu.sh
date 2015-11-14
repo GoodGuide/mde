@@ -77,7 +77,7 @@ trap show_exit_messages EXIT
 	}
 
 	mktmpdir() {
-		mktemp -d ${TMPDIR}gg-mde.XXXXX
+		mktemp --tmpdir -d gg-mde.XXXXX
 	}
 
 	wait_for() {
