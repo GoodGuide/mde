@@ -244,6 +244,7 @@ bash <(curl -fsSL "https://raw.githubusercontent.com/creationix/nvm/${nvm_versio
 # use a subshell to load NVM and install Node and packages. (NVM isn't compatible with the -u bash runtime option.)
 (
 	set +u
+	unset PREFIX
 	[ -s "$NVM_DIR/nvm.sh" ] \
 		&& source "$NVM_DIR/nvm.sh" \
 		&& [ $(type -t nvm) = 'function' ] \
