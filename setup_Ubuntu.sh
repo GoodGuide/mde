@@ -275,12 +275,13 @@ bash <(curl -fsSL "https://raw.githubusercontent.com/creationix/nvm/${nvm_versio
 
 	# echo_section "Installing phantomjs as NPM package"
 	# npm install -g phantomjs
-	cat <<-EOF | add_to_profile
-	# load NVM
-	export NVM_DIR="${PREFIX}/nvm"
-	[ -s "\$NVM_DIR/nvm.sh" ] && . "\$NVM_DIR/nvm.sh"
-	EOF
 )
+
+cat <<-EOF | add_to_profile
+# load NVM
+export NVM_DIR="${PREFIX}/nvm"
+[ -s "\$NVM_DIR/nvm.sh" ] && . "\$NVM_DIR/nvm.sh"
+EOF
 
 # many GG scripts have this hostname hard-coded in example configs, as it's used frequently in non-linux environments to refer to the docker VM. To make things easy, let's add it to this box as well, even though it's its own docker host and this name refers to localhost here.
 echo_section "Adding docker.dev hostname to /etc/hosts"
@@ -289,6 +290,15 @@ if grep -Eq '\sdocker.dev\b' /etc/hosts; then
 else
 	echo -ne "Adding new host:\n\n	"
 	printf '127.0.0.1\tdocker.dev\n' | sudo tee -a /etc/hosts
+fi
+
+echo_section 'goodguide-git-hooks'
+if ! can_exec 'goodguide-git-hooks'; then
+	silence pushd $(mktmpdir)
+	curl -fsSL https://github.com/GoodGuide/goodguide-git-hooks/releases/download/v0.0.7/goodguide-git-hooks_0.0.7_linux_amd64.tar.gz | \
+		tar -xvzf
+	sudo install -o root -g root ./goodguide-git-hooks "$PREFIX/bin/goodguide-git-hooks"
+	silence popd
 fi
 
 if [[ ! -d $HOME/.dotfiles ]]; then
