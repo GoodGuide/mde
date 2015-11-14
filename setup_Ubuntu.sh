@@ -68,12 +68,12 @@ trap show_exit_messages EXIT
 	}
 
 	add_to_profile() {
-		[[ ${profile_file:-unset} = 'unset' ]] && onoes 'add_to_profile used before $profile_file set!'
-		local file="$HOME/.${profile_file}"
-		[ -f "${file}" ] || touch "$file"
-		echo "  $1"
-		grep -Fqx "$1" "$file" && return
-		echo "$1" >> "$file"
+		cat >> "$tmp_profile_file"
+	}
+
+	append_profile_lines_to_real_shell_profile() {
+		echo -e '\n# The GoodGuide Onboarding MDE setup script added these lines:' >> "$1"
+		cat "$tmp_profile_file" >> "$1"
 	}
 
 	mktmpdir() {
@@ -103,8 +103,12 @@ trap show_exit_messages EXIT
 printf "\x1b[0m"
 
 export fails_file="$(mktemp -u --tmpdir ggmde.XXXXX)"
+export tmp_profile_file="$(mktemp -u --tmpdir ggmde.profile.XXXXX)"
 export SUDO_PROMPT='Enter your user password for sudo: '
-export PREFIX='/usr/local'
+export PREFIX="${PREFIX:-/usr/local}"
+
+# Make sure this PREFIX makes it into the PATH later
+echo 'export PATH="'${PREFIX}'/bin:${PATH}"' | add_to_profile
 
 echo_section "GoodGuide Minimal Development Environment OSX Installer"
 
@@ -187,6 +191,7 @@ if ! can_exec 'direnv'; then
 		sudo install -o root -g root ./direnv "$PREFIX/bin/direnv"
 		silence popd
 	fi
+	echo 'eval "$(direnv hook $(basename $SHELL))"' | add_to_profile
 fi
 
 if ! can_exec 'phantomjs'; then
@@ -210,6 +215,12 @@ if ! can_exec 'rbenv'; then
 	fi
 	# load rbenv now for use in this script
 	eval "$(rbenv init -)"
+
+	cat <<-EOF | add_to_profile
+	# load rbenv
+	export PATH="\$HOME/.rbenv/bin:\${PATH}"'
+	eval "\$(rbenv init -)"'
+	EOF
 fi
 
 echo_section 'Install Docker and tools'
@@ -237,6 +248,12 @@ fi
 echo_section 'Test docker setup is working'
 sudo docker run --rm busybox sh -c 'echo I AM ALIVE'
 
+cat <<-EOF | add_to_profile
+# this line is only necessary to satisfy checks in some init scripts which check
+# the existence of this variable for OSX users
+export DOCKER_HOST='unix:///var/run/docker.sock'
+EOF
+
 echo_section "Installing NodeJS Version Manager (nvm)"
 # install NVM at ~/.nvm
 export nvm_version='v0.29.0'
@@ -257,8 +274,14 @@ bash <(curl -fsSL "https://raw.githubusercontent.com/creationix/nvm/${nvm_versio
 
 	# echo_section "Installing phantomjs as NPM package"
 	# npm install -g phantomjs
+	cat <<-EOF | add_to_profile
+	# load NVM
+	export NVM_DIR="${PREFIX}/nvm"'
+	[ -s "\$NVM_DIR/nvm.sh" ] && . "\$NVM_DIR/nvm.sh"
+	EOF
 )
 
+# many GG scripts have this hostname hard-coded in example configs, as it's used frequently in non-linux environments to refer to the docker VM. To make things easy, let's add it to this box as well, even though it's its own docker host and this name refers to localhost here.
 echo_section "Adding docker.dev hostname to /etc/hosts"
 if grep -Eq '\sdocker.dev\b' /etc/hosts; then
 	echo "Already present"
@@ -275,23 +298,15 @@ if [[ ! -d $HOME/.dotfiles ]]; then
 fi
 
 # only set this *after* dotfiles may have been installed, to avoid writing to a profile which gets clobbered by dotfiles installation
-export profile_file=bashrc
+export profile_file="$HOME/.bashrc"
 
 echo_section "Change shell to ZSH"
 if ask 'Would you like to use ZSH as your default shell?'; then
 	chsh -s "$(which zsh)" $USER
-	export profile_file=zshrc
+	export profile_file="$HOME/.zshrc"
 fi
 
 echo_section "Altering shell RC"
-
-add_to_profile '# The GoodGuide Onboarding MDE setup script added these lines:'
-add_to_profile 'export PATH="'${PREFIX}'/bin:${PATH}"'
-add_to_profile 'export PATH="$HOME/.rbenv/bin:${PATH}"'
-add_to_profile 'eval "$(rbenv init -)"'
-add_to_profile "export DOCKER_HOST='unix:///var/run/docker.sock' # this line only necessary to satisfy checks in some init scripts which check the existence of this variable for OSX users"
-add_to_profile 'export NVM_DIR="'${PREFIX}'/nvm"'
-add_to_profile '[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"  # This loads nvm'
-add_to_profile 'eval "$(direnv hook $(basename $SHELL))"'
+append_profile_lines_to_real_shell_profile
 
 } # this ensures the whole script is downloaded before evaulation
