@@ -232,7 +232,7 @@ deb https://apt.dockerproject.org/repo ubuntu-${ubuntu_version} main
 EOF
 
 	sudo aptitude update
-	sudo aptitude install docker-engine "linux-image-extra-$(uname -r)"
+	sudo aptitude install --assume-yes --without-recommends docker-engine "linux-image-extra-$(uname -r)"
 fi
 
 if ! can_exec 'docker-compose'; then
@@ -295,8 +295,8 @@ export PATH="$GOPATH/bin:$PATH"
 mkdir -p "$GOPATH"
 
 cat <<-EOF | add_to_profile
-export GOPATH="$HOME/gopath"
-export PATH="$GOPATH/bin:$PATH"
+export GOPATH="\$HOME/gopath"
+export PATH="\$GOPATH/bin:\$PATH"
 EOF
 
 echo_section 'goodguide-git-hooks'
@@ -306,7 +306,7 @@ fi
 
 echo_section 'forego'
 if ! can_exec 'forego'; then
-	go get -u github.com/ddollar/forego
+	go get -u -v github.com/ddollar/forego
 fi
 
 if [[ ! -d $HOME/.dotfiles ]]; then
