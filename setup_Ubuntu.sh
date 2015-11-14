@@ -155,6 +155,7 @@ sudo aptitude --assume-yes --without-recommends install \
 	socat \
 	procps \
 	zsh \
+	python-dev
 
 # TODO: install awscli,
 
@@ -266,9 +267,11 @@ else
 	printf '127.0.0.1\tdocker.dev\n' | sudo tee -a /etc/hosts
 fi
 
-echo_section "Dotfiles"
-if ask_to_install 'goodguide/dotfiles'; then
-	bash <(curl -fsSL https://raw.githubusercontent.com/GoodGuide/dotfiles/master/install.sh)
+if [[ ! -d $HOME/.dotfiles ]]; then
+	echo_section "Dotfiles"
+	if ask_to_install 'goodguide/dotfiles'; then
+		bash <(curl -fsSL https://raw.githubusercontent.com/GoodGuide/dotfiles/master/install.sh)
+	fi
 fi
 
 # only set this *after* dotfiles may have been installed, to avoid writing to a profile which gets clobbered by dotfiles installation
