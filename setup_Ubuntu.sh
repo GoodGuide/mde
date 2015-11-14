@@ -68,7 +68,7 @@ trap show_exit_messages EXIT
 	}
 
 	add_to_profile() {
-		onoes 'add_to_profile used before $profile_file set!'
+		[[ ${profile_file:-unset} = 'unset' ]] && onoes 'add_to_profile used before $profile_file set!'
 		local file="$HOME/.${profile_file}"
 		[ -f "${file}" ] || touch "$file"
 		echo "  $1"
