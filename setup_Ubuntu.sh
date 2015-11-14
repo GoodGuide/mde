@@ -225,15 +225,16 @@ EOF
 	sudo aptitude install docker-engine "linux-image-extra-$(uname -r)"
 fi
 
-echo_section 'Test docker setup is working'
-sudo docker run --rm busybox sh -c 'echo I AM ALIVE'
-
 if ! can_exec 'docker-compose'; then
+	echo_section 'Install docker-compose'
 	silence pushd $(mktmpdir)
 	curl -fsSL -O ./docker-compose "https://github.com/docker/compose/releases/download/1.4.2/docker-compose-`uname -s`-`uname -m`"
 	sudo install -o root -g root ./docker-compose "$PREFIX/bin/docker-compose"
 	silence popd
 fi
+
+echo_section 'Test docker setup is working'
+sudo docker run --rm busybox sh -c 'echo I AM ALIVE'
 
 echo_section "Installing NodeJS Version Manager (nvm)"
 # install NVM at ~/.nvm
