@@ -178,7 +178,6 @@ if ! can_exec 'java'; then
 		sudo tar -C "${JAVA_HOME}/jre/lib/security/" -xvzf -
 fi
 
-# direnv
 if ! can_exec 'direnv'; then
 	echo_section 'Install direnv'
 	if ! sudo aptitude install direnv; then
@@ -189,7 +188,6 @@ if ! can_exec 'direnv'; then
 	fi
 fi
 
-# phantomjs
 if ! can_exec 'phantomjs'; then
 	echo_section 'Install PhantomJS'
 	silence pushd /opt
@@ -199,16 +197,17 @@ if ! can_exec 'phantomjs'; then
 	silence popd
 fi
 
-# rbenv
 if ! can_exec 'rbenv'; then
 	echo_section 'Install rbenv'
 	rbenv_dir="$HOME/.rbenv"
-
-	git clone https://github.com/sstephenson/rbenv.git "$rbenv_dir"
-	git clone https://github.com/sstephenson/ruby-build.git "$rbenv_dir/plugins/ruby-build"
-
-	# load rbenv now for use in this script
 	export PATH="$rbenv_dir/bin:$PATH"
+	if can_exec 'rbenv'; then
+		echo 'rbenv available at standard path. Assuming already installed.'
+	else
+		git clone https://github.com/sstephenson/rbenv.git "$rbenv_dir"
+		git clone https://github.com/sstephenson/ruby-build.git "$rbenv_dir/plugins/ruby-build"
+	fi
+	# load rbenv now for use in this script
 	eval "$(rbenv init -)"
 fi
 
