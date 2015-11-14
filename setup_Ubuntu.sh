@@ -99,6 +99,20 @@ trap show_exit_messages EXIT
 
 ### END FUNCTIONS
 
+### START RUN
+printf "\x1b[0m"
+
+export fails_file="$(mktemp -ut ggmde)"
+export SUDO_PROMPT='Enter your user password for sudo: '
+export PREFIX='/usr/local'
+
+echo_section "GoodGuide Minimal Development Environment OSX Installer"
+
+echo -e "This script will require sudo access more than once, and your attention throughout.\n"
+
+# Ask for the administrator password upfront
+sudo -v
+
 echo_section 'Install apt packages'
 sudo aptitude update
 
@@ -156,67 +170,77 @@ if ! can_exec 'java'; then
 	sudo apt-get install -y oracle-java8-installer
 
 	export JAVA_HOME=$(readlink -f $(which java) | sed "s:jre/bin/java::")
-	echo "export JAVA_HOME='${JAVA_HOME}'" | sudo tee /etc/profile.d/java-8-oracle.sh
+	echo "export JAVA_HOME='${JAVA_HOME}'" | sudo tee /etc/profile.d/java-8-oracle.sh > /dev/null
 
 	# Grab the fully-open security policy
 	sudo mkdir -p "${JAVA_HOME}/jre/lib/security/"
-	sudo curl -fsSL 'https://s3.amazonaws.com/code.goodguide.com/unlimited_jce_policy.tar.gz' | \
-	sudo tar -C "${JAVA_HOME}/jre/lib/security/" -xvzf -
+	curl -fsSL 'https://s3.amazonaws.com/code.goodguide.com/unlimited_jce_policy.tar.gz' | \
+		sudo tar -C "${JAVA_HOME}/jre/lib/security/" -xvzf -
 fi
 
 # direnv
 if ! can_exec 'direnv'; then
 	echo_section 'Install direnv'
 	if ! sudo aptitude install direnv; then
-		sudo curl -L https://github.com/direnv/direnv/releases/download/v2.6.0/direnv.linux-amd64 > /usr/local/bin/direnv
-		sudo chmod +x /usr/local/bin/direnv
+		silence pushd "$(mktmpdir)"
+		curl -fsSL -o ./direnv 'https://github.com/direnv/direnv/releases/download/v2.6.0/direnv.linux-amd64'
+		sudo install -o root -g root ./direnv "$PREFIX/bin/direnv"
+		silence popd
 	fi
-	echo 'eval "$(direnv hook bash)"' >> ~/.bashrc
-	echo 'eval "$(direnv hook zsh)"' >> ~/.zshrc
 fi
 
 # phantomjs
 if ! can_exec 'phantomjs'; then
 	echo_section 'Install PhantomJS'
-	pushd /opt
-	sudo curl https://s3.amazonaws.com/downloads.goodguide.com/phantomjs-1.9.8-linux-x86_64.tar.bz2 | tar xjf -
-	sudo ln -s /opt/phantomjs-1.9.8-linux-x86_64/bin/phantomjs /usr/bin/phantomjs
-	popd
+	silence pushd /opt
+	curl -fsSL 'https://s3.amazonaws.com/downloads.goodguide.com/phantomjs-1.9.8-linux-x86_64.tar.bz2' | \
+		sudo tar xjf -
+	sudo ln -s /opt/phantomjs-1.9.8-linux-x86_64/bin/phantomjs /usr/local/bin/phantomjs
+	silence popd
 fi
 
 # rbenv
 if ! can_exec 'rbenv'; then
 	echo_section 'Install rbenv'
-	git clone https://github.com/sstephenson/rbenv.git ~/.rbenv
-	git clone https://github.com/sstephenson/ruby-build.git ~/.rbenv/plugins/ruby-build
-	export PATH="$HOME/.rbenv/bin:$PATH"
+	rbenv_dir="$HOME/.rbenv"
+
+	git clone https://github.com/sstephenson/rbenv.git "$rbenv_dir"
+	git clone https://github.com/sstephenson/ruby-build.git "$rbenv_dir/plugins/ruby-build"
+
+	# load rbenv now for use in this script
+	export PATH="$rbenv_dir/bin:$PATH"
 	eval "$(rbenv init -)"
 fi
 
 echo_section 'Install Docker and tools'
 if ! can_exec 'docker'; then
 	# install docker's key
-	sudo apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys 58118E89F3A912897C070ADBF76221572C52609D
+	sudo apt-key adv --keyserver 'hkp://p80.pool.sks-keyservers.net:80' --recv-keys '58118E89F3A912897C070ADBF76221572C52609D'
+
 	ubuntu_version=$(lsb_release -sc)
 	cat <<EOF | sudo tee /etc/apt/sources.list.d/docker.list
 deb https://apt.dockerproject.org/repo ubuntu-${ubuntu_version} main
 EOF
-	aptitude update
-	aptitude install docker-engine "linux-image-extra-$(uname -r)"
+
+	sudo aptitude update
+	sudo aptitude install docker-engine "linux-image-extra-$(uname -r)"
 fi
 
-docker run --rm busybox sh -c 'host'
+echo_section 'Test docker setup is working'
+sudo docker run --rm busybox sh -c 'echo I AM ALIVE'
 
 if ! can_exec 'docker-compose'; then
-	curl -L https://github.com/docker/compose/releases/download/1.4.2/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose
-	chmod +x /usr/local/bin/docker-compose
+	silence pushd $(mktmpdir)
+	curl -fsSL -O ./docker-compose "https://github.com/docker/compose/releases/download/1.4.2/docker-compose-`uname -s`-`uname -m`"
+	sudo install -o root -g root ./docker-compose "$PREFIX/bin/docker-compose"
+	silence popd
 fi
 
 echo_section "Installing NodeJS Version Manager (nvm)"
 # install NVM at ~/.nvm
 export nvm_version='v0.29.0'
-export NVM_DIR="$HOME/.nvm"
-bash <(curl -s "https://raw.githubusercontent.com/creationix/nvm/${nvm_version}/install.sh")
+export NVM_DIR="$PREFIX/nvm"
+bash <(curl -fsSL "https://raw.githubusercontent.com/creationix/nvm/${nvm_version}/install.sh")
 # use a subshell to load NVM and install Node and packages. (NVM isn't compatible with the -u bash runtime option.)
 (
 	set +u
@@ -262,7 +286,7 @@ add_to_profile 'export PATH="'${PREFIX}'/bin:${PATH}"'
 add_to_profile 'export PATH="$HOME/.rbenv/bin:${PATH}"'
 add_to_profile 'eval "$(rbenv init -)"'
 add_to_profile "export DOCKER_HOST='unix:///var/run/docker.sock' # this line only necessary to satisfy checks in some init scripts which check the existence of this variable for OSX users"
-add_to_profile 'export NVM_DIR="$HOME/.nvm"'
+add_to_profile 'export NVM_DIR="'${PREFIX}'/nvm"'
 add_to_profile '[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"  # This loads nvm'
 add_to_profile 'eval "$(direnv hook $(basename $SHELL))"'
 
