@@ -219,8 +219,8 @@ if ! can_exec 'rbenv'; then
 
 	cat <<-EOF | add_to_profile
 	# load rbenv
-	export PATH="\$HOME/.rbenv/bin:\${PATH}"'
-	eval "\$(rbenv init -)"'
+	export PATH="\$HOME/.rbenv/bin:\${PATH}"
+	eval "\$(rbenv init -)"
 	EOF
 fi
 
@@ -277,7 +277,7 @@ bash <(curl -fsSL "https://raw.githubusercontent.com/creationix/nvm/${nvm_versio
 	# npm install -g phantomjs
 	cat <<-EOF | add_to_profile
 	# load NVM
-	export NVM_DIR="${PREFIX}/nvm"'
+	export NVM_DIR="${PREFIX}/nvm"
 	[ -s "\$NVM_DIR/nvm.sh" ] && . "\$NVM_DIR/nvm.sh"
 	EOF
 )
@@ -304,10 +304,11 @@ export profile_file="$HOME/.bashrc"
 echo_section "Change shell to ZSH"
 if ask 'Would you like to use ZSH as your default shell?'; then
 	chsh -s "$(which zsh)" $USER
+	echo "Shell set to $(which zsh)"
 	export profile_file="$HOME/.zshrc"
 fi
 
-echo_section "Altering shell RC"
+echo_section "Altering shell RC: $profile_file"
 append_profile_lines_to_real_shell_profile "$profile_file"
 
 } # this ensures the whole script is downloaded before evaulation
