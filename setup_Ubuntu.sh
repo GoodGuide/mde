@@ -186,12 +186,10 @@ fi
 
 if ! can_exec 'direnv'; then
 	echo_section 'Install direnv'
-	if ! sudo aptitude install direnv; then
-		silence pushd "$(mktmpdir)"
-		curl -fsSL -o ./direnv 'https://github.com/direnv/direnv/releases/download/v2.6.0/direnv.linux-amd64'
-		sudo install -o root -g root ./direnv "$PREFIX/bin/direnv"
-		silence popd
-	fi
+	silence pushd "$(mktmpdir)"
+	curl -fsSL -o ./direnv 'https://github.com/direnv/direnv/releases/download/v2.6.0/direnv.linux-amd64'
+	sudo install -o root -g root ./direnv "$PREFIX/bin/direnv"
+	silence popd
 	echo 'eval "$(direnv hook $(basename $SHELL))"' | add_to_profile
 fi
 
