@@ -122,45 +122,44 @@ echo_section 'Install apt packages'
 sudo aptitude update
 
 sudo aptitude --assume-yes --without-recommends install \
+	ack-grep \
+	autoconf \
+	automake \
 	build-essential \
+	cloc \
+	coreutils \
+	curl \
+	exuberant-ctags \
+	findutils \
+	gawk \
+	git \
+	gnupg \
+	golang-go \
+	htop \
 	imagemagick \
+	innotop \
+	jq \
 	libfontconfig \
 	libfreetype6 \
 	libmysqlclient-dev \
 	libssl-dev \
 	libxml2 \
-	pv \
-	jq \
-	git \
-	curl \
-	coreutils \
-	automake \
-	autoconf \
-	golang-go \
-	libxslt-dev \
 	libxml2-dev \
+	libxslt-dev \
 	maven2 \
-	python \
-	python3 \
-	tree \
-	htop \
-	vim \
-	tmux \
-	zsh \
-	ack-grep \
-	cloc \
-	ctags \
-	findutils \
-	sed \
-	gawk \
-	gnupg \
-	innotop \
 	mosh \
 	parallel \
-	socat \
 	procps \
-	zsh \
-	python-dev
+	pv \
+	python \
+	python-dev \
+	python3 \
+	sed \
+	socat \
+	tmux \
+	tree \
+	vim \
+	zsh
 
 # TODO: install awscli,
 
