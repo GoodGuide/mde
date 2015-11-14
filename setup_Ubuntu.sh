@@ -102,7 +102,7 @@ trap show_exit_messages EXIT
 ### START RUN
 printf "\x1b[0m"
 
-export fails_file="$(mktemp -ut ggmde)"
+export fails_file="$(mktemp -u --tmpdir ggmde.XXXXX)"
 export SUDO_PROMPT='Enter your user password for sudo: '
 export PREFIX='/usr/local'
 
