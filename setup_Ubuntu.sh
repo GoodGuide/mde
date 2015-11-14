@@ -69,6 +69,7 @@ trap show_exit_messages EXIT
 
 	add_to_profile() {
 		cat >> "$tmp_profile_file"
+		echo >> "$tmp_profile_file"
 	}
 
 	append_profile_lines_to_real_shell_profile() {
@@ -307,6 +308,6 @@ if ask 'Would you like to use ZSH as your default shell?'; then
 fi
 
 echo_section "Altering shell RC"
-append_profile_lines_to_real_shell_profile
+append_profile_lines_to_real_shell_profile "$profile_file"
 
 } # this ensures the whole script is downloaded before evaulation
