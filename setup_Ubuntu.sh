@@ -296,7 +296,7 @@ echo_section 'goodguide-git-hooks'
 if ! can_exec 'goodguide-git-hooks'; then
 	silence pushd $(mktmpdir)
 	curl -fsSL https://github.com/GoodGuide/goodguide-git-hooks/releases/download/v0.0.7/goodguide-git-hooks_0.0.7_linux_amd64.tar.gz | \
-		tar -xvzf
+		tar -xvzf -
 	sudo install -o root -g root ./goodguide-git-hooks "$PREFIX/bin/goodguide-git-hooks"
 	silence popd
 fi
